@@ -6,7 +6,7 @@ import os, re, time, base64, zlib, binascii, hashlib, random, string
 class Records:
   def __init__(self, www_dir = "./", record_dir = 'recordings/', record_list = 'records.js',
       record_html = 'records.html', slice_size = 256, compress_level = 9,
-      slice_str = '^_^', min_frames = 35, max_frames = 45, novnc_player = '/vplayer/',
+      slice_str = '=-+-+=', min_frames = 35, max_frames = 45, novnc_player = '/vplayer/',
       action = ('remove', 'zb64', 'slice', 'md', 'restore_raw', 'remove_raw')):
 
     self.www_dir = www_dir
@@ -429,7 +429,6 @@ class Records:
           self.generate_markdown(rec, info, self.zb64)
 
       # Generate xxx.slice
-      orig_rec = rec
       if rtype == self.zb64:
         rec = rec.replace(self.suffix(rtype), '')
 
@@ -450,10 +449,12 @@ class Records:
 
       if slices:
          slices = 1
-         orig_rec = rec.replace(self.suffix(self.zb64), '')
+         rec_name = self.abspath(rec, self.slice)
+      else:
+         rec_name = self.abspath(rec, self.zb64)
 
-      orig_rec = orig_rec.replace(self.record_dir, '')
-      info_list.append([orig_rec, os.path.basename(info['title']), size, info['time'],
+      rec_name = rec_name.replace(self.record_dir, '')
+      info_list.append([rec_name, os.path.basename(info['title']), size, info['time'],
                        info['create'], info['author'], info['category'], info['tags'],
                        info['desc'], slices])
 
