@@ -414,6 +414,9 @@ class Records:
         info_list.append([rec_name, os.path.basename(info['title']), info['size'], info['time'],
                        info['create'], info['author'], info['category'], info['tags'],
                        info['desc'], 1])
+        if 'md' in self.action:
+          rec = rec.replace(self.suffix(self.slice), '')
+          self.generate_markdown(rec, info, self.slice)
         continue
 
       # Generate xxx.zb64
