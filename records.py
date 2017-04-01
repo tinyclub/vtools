@@ -336,6 +336,7 @@ class Records:
       if not os.path.isfile(rec_long) \
         or rec.find(".gitignore") >= 0 \
         or rec.find(".vnc") >= 0 \
+        or rec.find(".git") >= 0 \
         or os.path.basename(rec) in (self.record_list, self.record_html):
         ignores.append(rec)
 
