@@ -7,7 +7,7 @@ class Records:
   def __init__(self, www_dir = "./", record_dir = 'recordings/', record_list = 'records.js',
       record_html = 'records.html', slice_size = 256, compress_level = 9,
       slice_str = '=-+-+=', min_frames = 35, max_frames = 45, novnc_player = '/vplayer/',
-      action = ('remove', 'zb64', 'slice', 'md', 'restore_raw', 'remove_raw')):
+      action = ('remove', 'zb64', 'slice', 'md_default', 'md', 'restore_raw', 'remove_raw')):
 
     self.www_dir = www_dir
     self.record_dir = record_dir
@@ -439,7 +439,8 @@ class Records:
         if 'zb64' in self.action:
           print "LOG:   Generate zb64"
           out_size = self.generate_zb64(rec, info)
-          self.generate_markdown(rec, info, self.zb64)
+          if 'md_default' in self.action:
+            self.generate_markdown(rec, info, self.zb64)
       else:
         out_size = os.path.getsize(f)
         if 'md' in self.action:
@@ -457,7 +458,8 @@ class Records:
           print "LOG:   Generate slices"
           slices = out_size / self.slice_size + 1
           slices = self.generate_slices(rec, info, slices)
-          self.generate_markdown(rec, info, self.slice)
+          if 'md_default' in self.action:
+            self.generate_markdown(rec, info, self.slice)
         elif 'md' in self.action:
           self.generate_markdown(rec, info, self.slice)
 

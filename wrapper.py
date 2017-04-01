@@ -42,9 +42,9 @@ def main():
     elif action == 2:
 	action = ('restore_raw')
     elif action == 3:
-	action = ('remove_raw', 'zb64', 'slice', 'md')
+	action = ('remove_raw', 'zb64', 'slice', 'md', 'md_default')
     else:
-	action = ('remove_raw', 'zb64', 'slice')
+	action = ('remove_raw', 'zb64', 'slice', 'md_default')
 
     r = Records(www_dir = www_dir, record_dir = record_dir, action = action)
 
