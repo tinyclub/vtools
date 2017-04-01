@@ -265,11 +265,14 @@ class Records:
         VNC_frame_time = self.get_frame_time(VNC_frame_data[VNC_frame_length-2])
         VNC_frame_data_compressed = ''
       else: return ''
-    else:
+    elif rtype == 'zb64':
       key = 'VNC_frame_data_compressed'
       if globals().has_key(key) or locals().has_key(key):
         VNC_frame_data = zlib.decompress(base64.b64decode(VNC_frame_data_compressed)).split(self.slice_str)
       else: return ''
+    else:
+        VNC_frame_data_compressed = ''
+        VNC_frame_data = ''
 
     for (k, v) in info.items():
       val = eval("VNC_frame_%s" % k)
@@ -283,7 +286,8 @@ class Records:
     if not info['desc']: info['desc'] = ""
 
     # Get file size
-    info['size'] = self.get_size_unit(os.path.getsize(f))
+    if not info['size']:
+      info['size'] = self.get_size_unit(os.path.getsize(f))
 
     return info
 
@@ -389,12 +393,14 @@ class Records:
     # file is too big, slice it to several pieces.
     info_list = []
     for rec in self.rec_list():
-      # Ignore the .zb64 and .slice* and the record list file
+      # Ignore some files
       print "LOG: " + rec
 
       rtype = 'raw'
       if rec.find(".md") >= 0: continue
-      if rec.find(self.suffix(self.slice)) >= 0: continue
+      if rec.find(self.suffix(self.slice)) >= 0:
+        if rec.find(self.suffix(self.slice) + ".") >= 0: continue
+        rtype = self.slice
       if rec.find(self.suffix(self.zb64)) >= 0 and rec.find(self.suffix(self.slice)) < 0:
         rtype = self.zb64
         if os.path.exists(self.abspath(rec.replace(self.suffix(rtype), ''))): continue
@@ -402,6 +408,13 @@ class Records:
       # Grab frame info
       info = self.get_frame_info(rec, rtype)
       if not info: continue
+
+      if rtype == self.slice:
+        rec_name = rec.replace(self.record_dir, '')
+        info_list.append([rec_name, os.path.basename(info['title']), info['size'], info['time'],
+                       info['create'], info['author'], info['category'], info['tags'],
+                       info['desc'], 1])
+        continue
 
       # Generate xxx.zb64
       if rtype == self.raw:
@@ -435,7 +448,8 @@ class Records:
 
       size = info['size'] = self.get_size_unit(out_size)
       slices = 0
-      if out_size and out_size > self.slice_size and 'slice' in self.action:
+      #if out_size and out_size > self.slice_size and 'slice' in self.action:
+      if 'slice' in self.action:
         if not os.path.exists(self.abspath(rec, self.slice)):
           print "LOG:   Generate slices"
           slices = out_size / self.slice_size + 1
