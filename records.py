@@ -24,9 +24,9 @@ class Records:
     self.novnc_player = novnc_player
 
     self.raw = "raw"
-    self.zb64 = "zb64"
-    self.slice = "slice"
-    self.slices = "slice."
+    self.zb64 = "nvz"
+    self.slice = "nvs"
+    self.slices = "nvs."
     self.post_md = "post.md"
     self.session_md = "session.md"
 
@@ -116,11 +116,11 @@ class Records:
 
     zb_content = ""
 
-    # .slice.x
+    # .nvs.x
     if rtype.find(self.slices) >= 0:
       zb_content += "var VNC_frame_size = '%s';\n" % info["size"]
       zb_content += "var VNC_frame_data_size = %s;\n" % info["data_size"]
-    # .slice and .zb64
+    # .nvs and .nvz
     else:
       for (k, v) in info.items():
         if k in ("slices", "data", "data_compressed"): continue
@@ -265,7 +265,7 @@ class Records:
         VNC_frame_time = self.get_frame_time(VNC_frame_data[VNC_frame_length-2])
         VNC_frame_data_compressed = ''
       else: return ''
-    elif rtype == 'zb64':
+    elif rtype == self.zb64:
       key = 'VNC_frame_data_compressed'
       if globals().has_key(key) or locals().has_key(key):
         VNC_frame_data = zlib.decompress(base64.b64decode(VNC_frame_data_compressed)).split(self.slice_str)
@@ -341,6 +341,7 @@ class Records:
         or rec.find(".gitignore") >= 0 \
         or rec.find(".vnc") >= 0 \
         or rec.find(".git") >= 0 \
+        or rec.find(".mp3") >= 0 \
         or os.path.basename(rec) in (self.record_list, self.record_html):
         ignores.append(rec)
 
@@ -379,7 +380,7 @@ class Records:
           #os.remove(f)
 
   def generate(self):
-    # Remove old record list, .zb64 and .slice*
+    # Remove old record list, .nvz and .nvs*
     if 'remove' in self.action:
       self.remove_old()
 
@@ -410,6 +411,14 @@ class Records:
       if not info: continue
 
       if rtype == self.slice:
+        found = 0
+        for ri in info_list:
+          if info['title'] == ri[1] and info['create'] == ri[4] and info['time'] == ri[3]:
+            found = 1
+            break
+        if found:
+          continue
+
         rec_name = rec.replace(self.record_dir, '')
         info_list.append([rec_name, os.path.basename(info['title']), info['size'], info['time'],
                        info['create'], info['author'], info['category'], info['tags'],
@@ -419,7 +428,7 @@ class Records:
           self.generate_markdown(rec, info, self.slice)
         continue
 
-      # Generate xxx.zb64
+      # Generate xxx.nvz
       if rtype == self.raw:
         f = self.abspath(rec, self.zb64)
       if rtype == self.zb64:
@@ -446,7 +455,7 @@ class Records:
         if 'md' in self.action:
           self.generate_markdown(rec, info, self.zb64)
 
-      # Generate xxx.slice
+      # Generate xxx.nvs
       if rtype == self.zb64:
         rec = rec.replace(self.suffix(rtype), '')
 
